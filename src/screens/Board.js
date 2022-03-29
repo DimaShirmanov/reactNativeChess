@@ -3,9 +3,11 @@ import {
     Dimensions,
     StyleSheet,
     View,
+    Text
 } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
-import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { interpolate, runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+
 import Field from '../models/Field';
 import Pawn from '../models/Pawn';
 
@@ -41,7 +43,7 @@ const RenderField = ({ field, handleMoveElement }) => {
     const translateY = useSharedValue(0);
     const absoluteSharedX = useSharedValue(0);
     const absoluteSharedY = useSharedValue(0);
-    const [position, setPosition] = useState({x: 0, y: 0});
+    const [position, setPosition] = useState({ x: 0, y: 0 });
 
     const panGestureEvent = useAnimatedGestureHandler({
         onStart: (event, context) => {
@@ -56,17 +58,18 @@ const RenderField = ({ field, handleMoveElement }) => {
             absoluteSharedY.value = absoluteY;
         },
         onEnd: () => {
-            runOnJS(setPosition)({x: absoluteSharedX.value, y: absoluteSharedY.value});
+            runOnJS(setPosition)({ x: absoluteSharedX.value, y: absoluteSharedY.value });
         }
     });
 
     useEffect(() => {
-        if (field && position.y !== 0 && position.x !== 0) {
+        if (element && field && position.y !== 0 && position.x !== 0) {
             const element = field.getElement();
 
             for (let y = 1; y <= 8; y++) {
                 const fromHeight = HEIGHT_FIELD * y - HEIGHT_FIELD;
                 const toHeight = HEIGHT_FIELD * y;
+
                 if (position.y > toHeight || position.y < fromHeight) {
                     continue;
                 }
@@ -75,14 +78,19 @@ const RenderField = ({ field, handleMoveElement }) => {
                     const toWidth = WIDTH_FIELD * x;
 
                     if (position.x >= fromWidth && position.x <= toWidth) {
-                        handleMoveElement(element, y, x);
+                        if (element.canMoveToPosition(x, y)) {
+                            handleMoveElement(element, x, y);
+                        } else {
+                            translateX.value = withSpring(element.getPosition().x, { overshootClamping: true, mass: 5 });
+                            translateY.value = withSpring(element.getPosition().y - 7, { overshootClamping: true, mass: 5 });
+                        }
                         break;
                     }
                 }
             }
         }
     }, [position]);
-
+    const opacity = useSharedValue(0);
 
     const reanimatedStyle = useAnimatedStyle(() => {
         return {
@@ -93,7 +101,17 @@ const RenderField = ({ field, handleMoveElement }) => {
                 {
                     translateY: translateY.value
                 }
-            ]
+            ],
+            opacity: interpolate(opacity.value, [0, 0.5, 1], [0, 0, 1])
+
+        }
+    }, []);
+
+    useEffect(() => {
+        opacity.value = withTiming(1, {duration: 600});
+
+        return () => {
+            opacity.value = withTiming(0, {duration: 100});
         }
     }, []);
 
@@ -113,17 +131,18 @@ const RenderField = ({ field, handleMoveElement }) => {
 const Board = () => {
     const [fields, setFields] = useState([]);
 
+
     useEffect(() => {
         // Генераия поля
         const FIELDS = [];
         let isWhite = false;
-        for (let x = 1; x <= 8; x++) {
+        for (let y = 1; y <= 8; y++) {
             const rows = [];
             isWhite = !isWhite;
-            for (let y = 1; y <= 8; y++) {
+            for (let x = 1; x <= 8; x++) {
                 const field = new Field(x, y, isWhite ? '#E9E9DF' : '#BB9979');
-                const cbElement = initialPositions[x] && initialPositions[x][y];
-                const element = cbElement && cbElement(x > 4 ? 2 : 1);
+                const cbElement = initialPositions[y] && initialPositions[y][x];
+                const element = cbElement && cbElement(y > 4 ? 2 : 1);
                 if (element) {
                     field.setElement(element);
                     element.setPosition(x, y);
@@ -148,6 +167,7 @@ const Board = () => {
 
                     // Очистка старого поля
                     if (lastElementX === currentFieldPosition.x && lastElementy === currentFieldPosition.y) {
+                        console.log('Remove element');
                         return new Field(lastElementX, lastElementy, field.getColor());
                     }
 
@@ -164,12 +184,23 @@ const Board = () => {
                 });
             });
         });
-    };
+    }
 
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        setIsLoading(false);
+    }, []);
+
+    if (isLoading) {
+        return <></>;
+    }
 
     return (
         <View style={styles.container}>
-            {fields.length > 0 && fields.map((rows, x) => rows.map((field, y) => <RenderField handleMoveElement={handleMoveElement} key={`${x}-${y}`} field={field} />))}
+            {fields.length > 0 && fields.map((rows, x) => rows.map((field, y) => {
+                return <RenderField handleMoveElement={handleMoveElement} key={`${x}-${y}`} field={field} />;
+            }))}
         </View>
     );
 };
@@ -179,8 +210,8 @@ export default Board;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexWrap: 'wrap',
         flexDirection: 'row',
+        flexWrap: 'wrap'
     },
     field: {
         width: WIDTH_FIELD,
@@ -190,6 +221,7 @@ const styles = StyleSheet.create({
     },
     imageElement: {
         width: WIDTH_FIELD / 3,
-        height: HEIGHT_FIELD
+        height: HEIGHT_FIELD,
+        marginBottom: 5
     }
 });
