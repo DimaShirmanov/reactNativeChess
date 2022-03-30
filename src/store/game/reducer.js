@@ -6,6 +6,7 @@ const initialState = Immutable({
     isLoading: true,
     fields: null,
     currentMove: null,
+    activeFields: []
 });
 
 const generateFields = () => {
@@ -43,6 +44,11 @@ export default (state = initialState, action = {}) => {
                 fields: null,
                 currentMove: null,
             });
+
+        case types.CAN_MOVE_FIELDS:
+            return state.merge({ activeFields: action.activeFields })
+        case types.CLEAR_MOVE_FIELDS:
+            return state.merge({activeFields: []});
         default:
             return state;
     }

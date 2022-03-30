@@ -4,6 +4,8 @@ import {
     View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import FIGURES from '../../constants/FIGURES';
+import USERS from '../../constants/USERS';
 import gameActions from '../../store/game/actions';
 import Field from './components/Field';
 import Figure from './components/Figure';
@@ -24,9 +26,32 @@ const Board = () => {
         return null;
     }
 
+    const PAWNS = [
+        <Figure x={1} y={2} type={FIGURES.pawn} player={USERS.PLAYER1} />,
+        <Figure x={2} y={2} type={FIGURES.pawn} player={USERS.PLAYER1} />,
+        <Figure x={3} y={2} type={FIGURES.pawn} player={USERS.PLAYER1} />,
+        <Figure x={4} y={2} type={FIGURES.pawn} player={USERS.PLAYER1} />,
+        <Figure x={5} y={2} type={FIGURES.pawn} player={USERS.PLAYER1} />,
+        <Figure x={6} y={2} type={FIGURES.pawn} player={USERS.PLAYER1} />,
+        <Figure x={7} y={2} type={FIGURES.pawn} player={USERS.PLAYER1} />,
+        <Figure x={8} y={2} type={FIGURES.pawn} player={USERS.PLAYER1} />,
+
+
+
+        <Figure x={1} y={7} type={FIGURES.pawn} player={USERS.PLAYER2} />,
+        <Figure x={2} y={7} type={FIGURES.pawn} player={USERS.PLAYER2} />,
+        <Figure x={3} y={7} type={FIGURES.pawn} player={USERS.PLAYER2} />,
+        <Figure x={4} y={7} type={FIGURES.pawn} player={USERS.PLAYER2} />,
+        <Figure x={5} y={7} type={FIGURES.pawn} player={USERS.PLAYER2} />,
+        <Figure x={6} y={7} type={FIGURES.pawn} player={USERS.PLAYER2} />,
+        <Figure x={7} y={7} type={FIGURES.pawn} player={USERS.PLAYER2} />,
+        <Figure x={8} y={7} type={FIGURES.pawn} player={USERS.PLAYER2} />,
+    ];
+    
+
     return (
         <View style={styles.container}>
-            <Figure x={3} y={2} />
+            {PAWNS.map(item => item)}
             {fields.map(rows => rows.map(field => <Field field={field} key={`${field.x}-${field.y}`} />))}
         </View>
     );
