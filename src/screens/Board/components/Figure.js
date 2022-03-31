@@ -19,6 +19,7 @@ import canMoveToFigure from "../../../utils/canMoveToFigure";
 
 const Figure = ({x, y, player, type}) => {
     const currentMove = useSelector(getCurrentMove);
+    //Получаем высоту-ширину экрана чтобы расчитать размеры изображения на поле
     const width = useWindowDimensions().width;
     const height = useWindowDimensions().height;
     const WIDTH_FILED = width / 8;
@@ -47,6 +48,7 @@ const Figure = ({x, y, player, type}) => {
             context.translateY = translateY.value;
             const x = Math.ceil(context.translateX / WIDTH_FILED);
             const y = Math.ceil(context.translateY / HEIGHT_IMAGE);
+            //Сохраняем начальные позиции X,Y
             runOnJS(setFromPosition)({x, y: y + 1});
         },
         onActive: (event, context) => {
@@ -59,6 +61,7 @@ const Figure = ({x, y, player, type}) => {
         onEnd: ({absoluteX, absoluteY}) => {
             const x = Math.ceil(absoluteX / WIDTH_FILED);
             const y = Math.ceil(absoluteY / HEIGHT_IMAGE);
+            //Сохраняем новые позиции X,Y
             runOnJS(setToPosition)({x, y: y});
 
             const normalizeAbsoluteX = (x - 1) * WIDTH_FILED;
@@ -79,21 +82,25 @@ const Figure = ({x, y, player, type}) => {
     }, []);
 
     const handleEndMove = () => {
-        const fieldsCanMoveFigureMove = canMoveToFigure({
+        //Получаем поля куда может сходить фигура
+        const fieldWhereCanTheFigureGo = canMoveToFigure({
             x: fromPosition.x,
             y: fromPosition.y,
             type,
             player
         });
-        const isCanMoveToFigure = Boolean(fieldsCanMoveFigureMove.find(item => item.x === toPosition.x && item.y === toPosition.y));
+        //Проверяем совпадает ли хоть одно поле с выбранной позицией
+        const isFigureCanGo = Boolean(fieldWhereCanTheFigureGo.find(item => item.x === toPosition.x && item.y === toPosition.y));
         if ((fromPosition.x !== toPosition.x) || (fromPosition.y !== toPosition.y)) {
-            if (isCanMoveToFigure) {
+            if (isFigureCanGo) {
                 dispatch(actions.changeMove());
             } else {
+                //Возвращаем фигура обратно, если поля нет
                 translateX.value = withTiming(getAbsolutePositionX(fromPosition.x));
                 translateY.value = withTiming(getAbsolutePositionY(fromPosition.y));
             }
         } else {
+            //Возвращаем фигура обратно, если X и Y остались прежними
             translateX.value = withTiming(getAbsolutePositionX(fromPosition.x));
             translateY.value = withTiming(getAbsolutePositionY(fromPosition.y));
         }
