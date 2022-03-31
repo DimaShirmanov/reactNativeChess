@@ -6,7 +6,8 @@ const initialState = Immutable({
     isLoading: true,
     fields: null,
     currentMove: null,
-    activeFields: []
+    activeFields: [],
+    figuresOnBoard: {}
 });
 
 const generateFields = () => {
@@ -16,7 +17,7 @@ const generateFields = () => {
         const rows = [];
         isWhite = !isWhite;
         for (let x = 1; x <= 8; x++) {
-            rows.push({ x, y, color: isWhite ? '#E9E9DF' : '#BB9979' });
+            rows.push({x, y, color: isWhite ? '#d9d9c3' : '#BB9979'});
             isWhite = !isWhite;
         }
         FIELDS.push(rows);
@@ -46,9 +47,25 @@ export default (state = initialState, action = {}) => {
             });
 
         case types.CAN_MOVE_FIELDS:
-            return state.merge({ activeFields: action.activeFields })
+            return state.merge({activeFields: action.activeFields})
         case types.CLEAR_MOVE_FIELDS:
             return state.merge({activeFields: []});
+        case types.SET_FIGURE_ON_BOARD: {
+            const {x, y, player, type} = action.data;
+            return state.merge({
+                figuresOnBoard: {
+                    [`${x}-${y}`]: {player, type}
+                }
+            }, {deep: true});
+        }
+        case types.REMOVE_FIGURE_ON_BOARD: {
+            const {x, y} = action.data;
+            return state.merge({
+                figuresOnBoard: Object.keys(state.figuresOnBoard).reduce((state, key) => {
+                    return key === `${x}-${y}` ? state : {...state, [key]: state.figuresOnBoard[key]}
+                }, {})
+            });
+        }
         default:
             return state;
     }

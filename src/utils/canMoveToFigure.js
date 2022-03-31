@@ -14,7 +14,6 @@ export default ({
             return [
                 { x, y: player === USERS.PLAYER1 ? y + 1 : y - 1 },
                 { x, y: player === USERS.PLAYER1 ? y + 2 : y - 2 },
-                { x, y: player === USERS.PLAYER1 ? y + 3 : y - 3 }
             ].filter(filterXY);
         }
 

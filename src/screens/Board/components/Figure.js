@@ -1,7 +1,8 @@
 import React, { memo, useEffect, useState } from 'react';
 import {
     StyleSheet,
-    Dimensions
+    Dimensions,
+    useWindowDimensions
 } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -10,15 +11,17 @@ import FIGURE_IMAGES from '../../../constants/FIGURE_IMAGES';
 import actions from '../../../store/game/actions';
 import canMoveToFigure from '../../../utils/canMoveToFigure';
 
-const { width, height } = Dimensions.get('screen');
-
-const WIDTH_FILED = width / 8;
-const HEIGHT_FIELD = height / 8;
-
-const WIDTH = WIDTH_FILED * 0.5;
-const HEIGHT = HEIGHT_FIELD;
 
 const Figure = ({ x, y, player, type }) => {
+    const width = useWindowDimensions().width;
+    const height = useWindowDimensions().height;
+
+    const WIDTH_FILED = width / 8;
+    const HEIGHT_FIELD = height / 8;
+
+    const WIDTH = WIDTH_FILED * 0.3;
+    const HEIGHT = HEIGHT_FIELD;
+
     const dispath = useDispatch();
     const activeFields = useSelector(state => state.game.activeFields);
     const [beforePosition, setBeforePosition] = useState({ x, y });
@@ -58,21 +61,27 @@ const Figure = ({ x, y, player, type }) => {
     }, []);
 
     useEffect(() => {
+        Dimensions.addEventListener('change', ({window:{width,height}})=>{
+            console.log({width, height})
+        })
+    }, []);
+
+    useEffect(() => {
         if (position.x === x && position.y === y) {
             return;
         }
-
-        console.log(position);
     }, [position]);
 
     useEffect(() => {
-        translateX.value = withTiming((x - 1) * WIDTH_FILED + (WIDTH_FILED * 0.3));
-        translateY.value = withTiming((y - 1) * HEIGHT_FIELD);
+        dispath(actions.setFigureOnBoard({x, y, player, type}));
+        translateX.value = withTiming((x - 1) * WIDTH_FILED + (WIDTH_FILED * 0.3), {duration: 500});
+        translateY.value = withTiming((y - 1) * HEIGHT_FIELD, {duration: 500});
     }, [x, y]);
 
 
+
     return (
-        <PanGestureHandler onActivated={() => {
+        <PanGestureHandler key={`${x}-${y}-${type}-${player}`} onActivated={() => {
             setBeforePosition({
                 x: position.x,
                 y: position.y
@@ -92,18 +101,16 @@ const Figure = ({ x, y, player, type }) => {
             }
             dispath(actions.clearMove());
         }} onGestureEvent={panGestureHandler}>
-            <Animated.Image style={[styles.container, reanimatedStyle]} source={figureImage} />
+            <Animated.Image style={[styles.container, reanimatedStyle, {width: WIDTH, height: HEIGHT}]} source={figureImage} />
         </PanGestureHandler>
     );
 };
 
-export default memo(Figure);
+export default Figure;
 
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
         zIndex: 1,
-        width: WIDTH,
-        height: HEIGHT
     }
 });
