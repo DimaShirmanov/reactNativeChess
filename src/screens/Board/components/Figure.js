@@ -1,7 +1,6 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     StyleSheet,
-    Dimensions,
     useWindowDimensions
 } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
@@ -22,7 +21,7 @@ const Figure = ({ x, y, player, type }) => {
     const WIDTH = WIDTH_FILED * 0.3;
     const HEIGHT = HEIGHT_FIELD;
 
-    const dispath = useDispatch();
+    const dispatch = useDispatch();
     const activeFields = useSelector(state => state.game.activeFields);
     const [beforePosition, setBeforePosition] = useState({ x, y });
     const [position, setPosition] = useState({ x, y });
@@ -61,19 +60,7 @@ const Figure = ({ x, y, player, type }) => {
     }, []);
 
     useEffect(() => {
-        Dimensions.addEventListener('change', ({window:{width,height}})=>{
-            console.log({width, height})
-        })
-    }, []);
-
-    useEffect(() => {
-        if (position.x === x && position.y === y) {
-            return;
-        }
-    }, [position]);
-
-    useEffect(() => {
-        dispath(actions.setFigureOnBoard({x, y, player, type}));
+        dispatch(actions.setFigureOnBoard({x, y, player, type}));
         translateX.value = withTiming((x - 1) * WIDTH_FILED + (WIDTH_FILED * 0.3), {duration: 500});
         translateY.value = withTiming((y - 1) * HEIGHT_FIELD, {duration: 500});
     }, [x, y]);
@@ -89,17 +76,17 @@ const Figure = ({ x, y, player, type }) => {
             const array = canMoveToFigure({
                 x: position.x, y: position.y, type, player
             });
-            dispath(actions.canMoveFields(array));
+            dispatch(actions.canMoveFields(array));
         }} onEnded={() => {
             if (beforePosition.x === position.x && position.y === beforePosition.y) {
-                dispath(actions.clearMove());
+                dispatch(actions.clearMove());
                 return;
             }
             if (!activeFields.find(item => item.x === position.x && item.y === position.y)) {
                 translateX.value = withTiming((beforePosition.x - 1) * WIDTH_FILED + (WIDTH_FILED * 0.3));
                 translateY.value = withTiming((beforePosition.y - 1) * HEIGHT_FIELD);
             }
-            dispath(actions.clearMove());
+            dispatch(actions.clearMove());
         }} onGestureEvent={panGestureHandler}>
             <Animated.Image style={[styles.container, reanimatedStyle, {width: WIDTH, height: HEIGHT}]} source={figureImage} />
         </PanGestureHandler>
