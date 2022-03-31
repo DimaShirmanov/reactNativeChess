@@ -61,8 +61,8 @@ export default (state = initialState, action = {}) => {
         case types.REMOVE_FIGURE_ON_BOARD: {
             const {x, y} = action.data;
             return state.merge({
-                figuresOnBoard: Object.keys(state.figuresOnBoard).reduce((state, key) => {
-                    return key === `${x}-${y}` ? state : {...state, [key]: state.figuresOnBoard[key]}
+                figuresOnBoard: Object.keys(state.figuresOnBoard).reduce((acc, key) => {
+                    return key === `${x}-${y}` ? acc : {...acc, [key]: state.figuresOnBoard[key]}
                 }, {})
             });
         }
