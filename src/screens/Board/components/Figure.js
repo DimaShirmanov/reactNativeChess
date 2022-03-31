@@ -1,20 +1,24 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     StyleSheet,
     useWindowDimensions
 } from 'react-native';
 import {PanGestureHandler} from 'react-native-gesture-handler';
 import Animated, {
+    runOnJS,
     useAnimatedGestureHandler,
     useAnimatedStyle,
-    useSharedValue,
+    useSharedValue, withSpring,
     withTiming
 } from 'react-native-reanimated';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import FIGURE_IMAGES from '../../../constants/FIGURE_IMAGES';
 import actions from '../../../store/game/actions';
+import {getCurrentMove} from "../../../store/game/selectors";
+import canMoveToFigure from "../../../utils/canMoveToFigure";
 
 const Figure = ({x, y, player, type}) => {
+    const currentMove = useSelector(getCurrentMove);
     const width = useWindowDimensions().width;
     const height = useWindowDimensions().height;
     const WIDTH_FILED = width / 8;
@@ -34,10 +38,16 @@ const Figure = ({x, y, player, type}) => {
         dispatch(actions.setFigureOnBoard({x, y, player, type}));
     }, []);
 
+    const [fromPosition, setFromPosition] = useState({x, y});
+    const [toPosition, setToPosition] = useState({x: 0, y: 0});
+
     const panGestureHandler = useAnimatedGestureHandler({
         onStart: (event, context) => {
             context.translateX = translateX.value;
             context.translateY = translateY.value;
+            const x = Math.ceil(context.translateX / WIDTH_FILED);
+            const y = Math.ceil(context.translateY / HEIGHT_IMAGE);
+            runOnJS(setFromPosition)({x, y: y + 1});
         },
         onActive: (event, context) => {
             const {absoluteY, absoluteX} = event;
@@ -47,10 +57,13 @@ const Figure = ({x, y, player, type}) => {
             context.absoluteY = absoluteY;
         },
         onEnd: ({absoluteX, absoluteY}) => {
-            const x = Math.ceil(absoluteX / WIDTH_FILED) - 1;
-            const y = Math.ceil(absoluteY / HEIGHT_IMAGE) - 1;
-            const normalizeAbsoluteX = x * WIDTH_FILED;
-            const normalizeAbsoluteY = y * HEIGHT_IMAGE;
+            const x = Math.ceil(absoluteX / WIDTH_FILED);
+            const y = Math.ceil(absoluteY / HEIGHT_IMAGE);
+            runOnJS(setToPosition)({x, y: y});
+
+            const normalizeAbsoluteX = (x - 1) * WIDTH_FILED;
+            const normalizeAbsoluteY = (y - 1) * HEIGHT_IMAGE;
+
             translateX.value = withTiming(normalizeAbsoluteX + WIDTH_FILED * 0.3);
             translateY.value = withTiming(normalizeAbsoluteY);
         },
@@ -65,8 +78,29 @@ const Figure = ({x, y, player, type}) => {
         }
     }, []);
 
+    const handleEndMove = () => {
+        const fieldsCanMoveFigureMove = canMoveToFigure({
+            x: fromPosition.x,
+            y: fromPosition.y,
+            type,
+            player
+        });
+        const isCanMoveToFigure = Boolean(fieldsCanMoveFigureMove.find(item => item.x === toPosition.x && item.y === toPosition.y));
+        if ((fromPosition.x !== toPosition.x) || (fromPosition.y !== toPosition.y)) {
+            if (isCanMoveToFigure) {
+                dispatch(actions.changeMove());
+            } else {
+                translateX.value = withTiming(getAbsolutePositionX(fromPosition.x));
+                translateY.value = withTiming(getAbsolutePositionY(fromPosition.y));
+            }
+        } else {
+            translateX.value = withTiming(getAbsolutePositionX(fromPosition.x));
+            translateY.value = withTiming(getAbsolutePositionY(fromPosition.y));
+        }
+    }
+
     return (
-        <PanGestureHandler onGestureEvent={panGestureHandler}>
+        <PanGestureHandler onEnded={handleEndMove} enabled={player !== currentMove} onGestureEvent={panGestureHandler}>
             <Animated.Image style={[styles.container, reanimatedStyle, {width: WIDTH_IMAGE, height: HEIGHT_IMAGE}]}
                             source={figureImage}/>
         </PanGestureHandler>
