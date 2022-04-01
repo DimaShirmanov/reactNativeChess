@@ -8,7 +8,7 @@ const getPositionForPawn = ({ x, y, player, figuresOnBoard }) => {
     for (let i = 1; i <= 2; i++) {
         const newY = player === USERS.PLAYER2 ? y - i : y + i;
         const findElementByPosition = figuresOnBoard.find(item => item.x == x && item.y === newY);
-       
+
         if (findElementByPosition) {
             break;
         }
@@ -21,11 +21,11 @@ const getPositionForPawn = ({ x, y, player, figuresOnBoard }) => {
         const rightElement = figuresOnBoard.find(item => item.x === x + 1 && item.y === y - 1);
 
         if (leftElement) {
-            result.push({x: x - 1, y: y - 1});
+            result.push({ x: x - 1, y: y - 1 });
         }
 
         if (rightElement) {
-            result.push({x: x + 1, y: y - 1});
+            result.push({ x: x + 1, y: y - 1 });
         }
     }
 
@@ -34,11 +34,11 @@ const getPositionForPawn = ({ x, y, player, figuresOnBoard }) => {
         const rightElement = figuresOnBoard.find(item => item.x === x + 1 && item.y === y + 1);
 
         if (leftElement) {
-            result.push({x: x - 1, y: y + 1});
+            result.push({ x: x - 1, y: y + 1 });
         }
 
         if (rightElement) {
-            result.push({x: x + 1, y: y + 1});
+            result.push({ x: x + 1, y: y + 1 });
         }
     }
 
@@ -110,24 +110,73 @@ const getPositionForRook = ({ x, y, player, figuresOnBoard }) => {
 
 const getPositionForHorse = ({ x, y, player, figuresOnBoard }) => {
     const results = [
-        {x: x + 1, y: y + 2},
-        {x: x - 1, y: y + 2},
-        {x: x + 1, y: y - 2},
-        {x: x - 1, y: y - 2},
+        { x: x + 1, y: y + 2 },
+        { x: x - 1, y: y + 2 },
+        { x: x + 1, y: y - 2 },
+        { x: x - 1, y: y - 2 },
 
-        {x: x + 2, y: y + 1},
-        {x: x - 2, y: y + 1},
-        {x: x + 2, y: y - 1},
-        {x: x - 2, y: y - 1}
+        { x: x + 2, y: y + 1 },
+        { x: x - 2, y: y + 1 },
+        { x: x + 2, y: y - 1 },
+        { x: x - 2, y: y - 1 }
     ].filter(el => {
         const findElementByPosition = figuresOnBoard.find(item => item.x == el.x && item.y === el.y);
         if (findElementByPosition && findElementByPosition.player === player) {
             return false;
         }
 
-        return  true;
+        return true;
     });
 
+    return results;
+}
+
+const getPositionForKing = ({ x, y, player, figuresOnBoard }) => {
+    const results = [];
+
+    for (let i = x - 1; i <= x + 1; i++) {
+        for (let j = y - 1; j <= y + 1; j++) {
+            results.push({ x: i, y: j })
+        }
+    }
+
+    return results.filter(el => {
+        const findElementByPosition = figuresOnBoard.find(item => item.x == el.x && item.y === el.y);
+        if (findElementByPosition && findElementByPosition.player === player) {
+            return false;
+        }
+
+        return true;
+    });;
+}
+
+const getPositionForOfficer = ({ x, y, player, figuresOnBoard }) => {
+    const results = [];
+
+    const diff = 1;
+
+    for (let i = 1; i <= 8; i++) {
+        results.push({ x: x - (diff * i), y: y - (diff * i) });
+        results.push({ x: x + (diff * i), y: y + (diff * i) });
+
+        results.push({ x: x - (diff * i), y: y + (diff * i) });
+        results.push({ x: x + (diff * i), y: y - (diff * i) });
+    }
+
+    return results.filter(el => {
+        const findElementByPosition = figuresOnBoard.find(item => item.x == el.x && item.y === el.y);
+        if (findElementByPosition && findElementByPosition.player === player) {
+            return false;
+        }
+
+        return true;
+    });;
+};
+
+
+const getPositionForQueen = ({ x, y, player, figuresOnBoard }) => {
+    const results = [];
+    
     return results;
 }
 
@@ -148,7 +197,12 @@ export default ({
 
         case FIGURES.horse:
             return getPositionForHorse({ x, y, player, figuresOnBoard }).filter(filterXY);
-
+        case FIGURES.officer:
+            return getPositionForOfficer({ x, y, player, figuresOnBoard }).filter(filterXY);
+        case FIGURES.king:
+            return getPositionForKing({ x, y, player, figuresOnBoard }).filter(filterXY);
+        case FIGURES.queen:
+            return getPositionForQueen({ x, y, player, figuresOnBoard }).filter(filterXY);
         default:
             return [];
     }
