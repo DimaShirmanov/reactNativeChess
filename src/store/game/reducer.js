@@ -54,6 +54,7 @@ export default (state = initialState, action = {}) => {
                     { x: 6, y: 1, type: FIGURES.officer, player: USERS.PLAYER1 },
                     { x: 5, y: 1, type: FIGURES.king, player: USERS.PLAYER1 },
                     { x: 4, y: 1, type: FIGURES.queen, player: USERS.PLAYER1 },
+
                     { x: 1, y: 7, type: FIGURES.pawn, player: USERS.PLAYER2 },
                     { x: 2, y: 7, type: FIGURES.pawn, player: USERS.PLAYER2 },
                     { x: 3, y: 7, type: FIGURES.pawn, player: USERS.PLAYER2 },
@@ -92,7 +93,6 @@ export default (state = initialState, action = {}) => {
                 x, y, player: action.player, figuresOnBoard: state.figuresOnBoard, type: action.figureType
             });
 
-            console.log(activeFields);
             return state.merge({activeFields});
         case types.MOVE_FIGURE:
             const { fromPosition, toPosition, player } = action;

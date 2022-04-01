@@ -19,7 +19,6 @@ import { getCurrentMove } from "../../../store/game/selectors";
 
 const Figure = ({ position, player, type }) => {
     const currentMove = useSelector(getCurrentMove);
-    //Получаем высоту-ширину экрана чтобы расчитать размеры изображения на поле
     const width = useWindowDimensions().width;
     const height = useWindowDimensions().height;
     const WIDTH_FILED = width / 8;
@@ -35,7 +34,6 @@ const Figure = ({ position, player, type }) => {
     const translateX = useSharedValue(getAbsolutePositionX(position.x));
     const translateY = useSharedValue(getAbsolutePositionY(position.y));
 
-    const [fromPosition, setFromPosition] = useState(position);
     const [toPosition, setToPosition] = useState({ x: 0, y: 0 });
 
     const panGestureHandler = useAnimatedGestureHandler({
@@ -44,8 +42,6 @@ const Figure = ({ position, player, type }) => {
             context.translateY = translateY.value;
             const x = Math.ceil(context.translateX / WIDTH_FILED);
             const y = Math.ceil(context.translateY / HEIGHT_IMAGE);
-            //Сохраняем начальные позиции X,Y
-            runOnJS(setFromPosition)({ x, y: y + 1 });
         },
         onActive: (event, context) => {
             const { absoluteY, absoluteX } = event;
@@ -57,7 +53,6 @@ const Figure = ({ position, player, type }) => {
         onEnd: ({ absoluteX, absoluteY }) => {
             const x = Math.ceil(absoluteX / WIDTH_FILED);
             const y = Math.ceil(absoluteY / HEIGHT_IMAGE);
-            //Сохраняем новые позиции X,Y
             runOnJS(setToPosition)({ x, y: y });
 
             const normalizeAbsoluteX = (x - 1) * WIDTH_FILED;
@@ -73,7 +68,7 @@ const Figure = ({ position, player, type }) => {
             transform: [
                 { translateX: translateX.value },
                 { translateY: translateY.value },
-                { scale: 0.6 }
+                { scale: 0.9 }
             ],
         }
     }, []);
@@ -81,11 +76,11 @@ const Figure = ({ position, player, type }) => {
     const handleEndMove = () => {
         translateX.value = withTiming(getAbsolutePositionX(position.x), { duration: 500 });
         translateY.value = withTiming(getAbsolutePositionY(position.y), { duration: 500 });
-        dispatch(actions.moveFigure({ fromPosition, toPosition, player }));
+        dispatch(actions.moveFigure({ fromPosition: position , toPosition, player }));
     }
 
     const handleActivatedFigure = () => {
-        dispatch(actions.toIdentifyPossibleMoves({ fromPosition, player, figureType: type }));
+        dispatch(actions.toIdentifyPossibleMoves({ fromPosition: position, player, figureType: type }));
     }
 
     return (
