@@ -10,10 +10,36 @@ const getPositionForPawn = ({ x, y, player, figuresOnBoard }) => {
         const findElementByPosition = figuresOnBoard.find(item => item.x == x && item.y === newY);
        
         if (findElementByPosition) {
-            return result;
+            break;
         }
 
         result.push({ x, y: newY });
+    }
+
+    if (player === USERS.PLAYER2) {
+        const leftElement = figuresOnBoard.find(item => item.x === x - 1 && item.y === y - 1);
+        const rightElement = figuresOnBoard.find(item => item.x === x + 1 && item.y === y - 1);
+
+        if (leftElement) {
+            result.push({x: x - 1, y: y - 1});
+        }
+
+        if (rightElement) {
+            result.push({x: x + 1, y: y - 1});
+        }
+    }
+
+    if (player === USERS.PLAYER1) {
+        const leftElement = figuresOnBoard.find(item => item.x === x - 1 && item.y === y + 1);
+        const rightElement = figuresOnBoard.find(item => item.x === x + 1 && item.y === y + 1);
+
+        if (leftElement) {
+            result.push({x: x - 1, y: y + 1});
+        }
+
+        if (rightElement) {
+            result.push({x: x + 1, y: y + 1});
+        }
     }
 
     return result;
