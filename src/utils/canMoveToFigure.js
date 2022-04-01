@@ -7,7 +7,8 @@ export default ({
     x,
     y,
     type,
-    player
+    player,
+    figuresOnBoard
 }) => {
     switch (type) {
         case FIGURES.pawn: {

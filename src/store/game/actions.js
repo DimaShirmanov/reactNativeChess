@@ -5,7 +5,21 @@ const changeMove = () => ({ type: types.CHANGE_MOVE });
 const clearGame = () => ({ type: types.CLEAR_GAME });
 const canMoveFields = activeFields => ({type: types.CAN_MOVE_FIELDS, activeFields});
 const clearMove = () => ({type: types.CLEAR_MOVE_FIELDS});
-const setFigureOnBoard = data => ({type: types.SET_FIGURE_ON_BOARD, data});
+
+
+const moveFigure = ({fromPosition, toPosition, player}) => ({
+    type: types.MOVE_FIGURE,
+    fromPosition,
+    toPosition,
+    player
+});
+
+const toIdentifyPossibleMoves = ({fromPosition, player, figureType}) => ({
+    type: types.TO_IDENTIFY_POSSIBLE_MOVES,
+    fromPosition,
+    player,
+    figureType
+});
 
 export default {
     initGame,
@@ -13,5 +27,6 @@ export default {
     clearGame,
     canMoveFields,
     clearMove,
-    setFigureOnBoard
+    moveFigure,
+    toIdentifyPossibleMoves
 }

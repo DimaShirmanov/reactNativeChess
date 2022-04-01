@@ -1,23 +1,23 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     StyleSheet,
     useWindowDimensions
 } from 'react-native';
-import {PanGestureHandler} from 'react-native-gesture-handler';
+import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
+    interpolate,
     runOnJS,
     useAnimatedGestureHandler,
     useAnimatedStyle,
-    useSharedValue, withSpring,
+    useSharedValue,
     withTiming
 } from 'react-native-reanimated';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import FIGURE_IMAGES from '../../../constants/FIGURE_IMAGES';
 import actions from '../../../store/game/actions';
-import {getCurrentMove} from "../../../store/game/selectors";
-import canMoveToFigure from "../../../utils/canMoveToFigure";
+import { getCurrentMove } from "../../../store/game/selectors";
 
-const Figure = ({x, y, player, type}) => {
+const Figure = ({ position, player, type }) => {
     const currentMove = useSelector(getCurrentMove);
     //Получаем высоту-ширину экрана чтобы расчитать размеры изображения на поле
     const width = useWindowDimensions().width;
@@ -32,15 +32,11 @@ const Figure = ({x, y, player, type}) => {
     const getAbsolutePositionY = y => (y - 1) * HEIGHT_IMAGE;
 
     const dispatch = useDispatch();
-    const translateX = useSharedValue(getAbsolutePositionX(x) || 0);
-    const translateY = useSharedValue(getAbsolutePositionY(y) || 0);
+    const translateX = useSharedValue(getAbsolutePositionX(position.x));
+    const translateY = useSharedValue(getAbsolutePositionY(position.y));
 
-    useEffect(() => {
-        dispatch(actions.setFigureOnBoard({x, y, player, type}));
-    }, []);
-
-    const [fromPosition, setFromPosition] = useState({x, y});
-    const [toPosition, setToPosition] = useState({x: 0, y: 0});
+    const [fromPosition, setFromPosition] = useState(position);
+    const [toPosition, setToPosition] = useState({ x: 0, y: 0 });
 
     const panGestureHandler = useAnimatedGestureHandler({
         onStart: (event, context) => {
@@ -49,20 +45,20 @@ const Figure = ({x, y, player, type}) => {
             const x = Math.ceil(context.translateX / WIDTH_FILED);
             const y = Math.ceil(context.translateY / HEIGHT_IMAGE);
             //Сохраняем начальные позиции X,Y
-            runOnJS(setFromPosition)({x, y: y + 1});
+            runOnJS(setFromPosition)({ x, y: y + 1 });
         },
         onActive: (event, context) => {
-            const {absoluteY, absoluteX} = event;
+            const { absoluteY, absoluteX } = event;
             translateX.value = event.translationX + context.translateX;
             translateY.value = event.translationY + context.translateY;
             context.absoluteX = absoluteX;
             context.absoluteY = absoluteY;
         },
-        onEnd: ({absoluteX, absoluteY}) => {
+        onEnd: ({ absoluteX, absoluteY }) => {
             const x = Math.ceil(absoluteX / WIDTH_FILED);
             const y = Math.ceil(absoluteY / HEIGHT_IMAGE);
             //Сохраняем новые позиции X,Y
-            runOnJS(setToPosition)({x, y: y});
+            runOnJS(setToPosition)({ x, y: y });
 
             const normalizeAbsoluteX = (x - 1) * WIDTH_FILED;
             const normalizeAbsoluteY = (y - 1) * HEIGHT_IMAGE;
@@ -75,41 +71,27 @@ const Figure = ({x, y, player, type}) => {
     const reanimatedStyle = useAnimatedStyle(() => {
         return {
             transform: [
-                {translateX: translateX.value},
-                {translateY: translateY.value},
-            ]
+                { translateX: translateX.value },
+                { translateY: translateY.value },
+                { scale: 0.6 }
+            ],
         }
     }, []);
 
     const handleEndMove = () => {
-        //Получаем поля куда может сходить фигура
-        const fieldWhereCanTheFigureGo = canMoveToFigure({
-            x: fromPosition.x,
-            y: fromPosition.y,
-            type,
-            player
-        });
-        //Проверяем совпадает ли хоть одно поле с выбранной позицией
-        const isFigureCanGo = Boolean(fieldWhereCanTheFigureGo.find(item => item.x === toPosition.x && item.y === toPosition.y));
-        if ((fromPosition.x !== toPosition.x) || (fromPosition.y !== toPosition.y)) {
-            if (isFigureCanGo) {
-                dispatch(actions.changeMove());
-            } else {
-                //Возвращаем фигура обратно, если поля нет
-                translateX.value = withTiming(getAbsolutePositionX(fromPosition.x));
-                translateY.value = withTiming(getAbsolutePositionY(fromPosition.y));
-            }
-        } else {
-            //Возвращаем фигура обратно, если X и Y остались прежними
-            translateX.value = withTiming(getAbsolutePositionX(fromPosition.x));
-            translateY.value = withTiming(getAbsolutePositionY(fromPosition.y));
-        }
+        translateX.value = withTiming(getAbsolutePositionX(position.x), { duration: 500 });
+        translateY.value = withTiming(getAbsolutePositionY(position.y), { duration: 500 });
+        dispatch(actions.moveFigure({ fromPosition, toPosition, player }));
+    }
+
+    const handleActivatedFigure = () => {
+        dispatch(actions.toIdentifyPossibleMoves({ fromPosition, player, figureType: type }));
     }
 
     return (
-        <PanGestureHandler onEnded={handleEndMove} enabled={player !== currentMove} onGestureEvent={panGestureHandler}>
-            <Animated.Image style={[styles.container, reanimatedStyle, {width: WIDTH_IMAGE, height: HEIGHT_IMAGE}]}
-                            source={figureImage}/>
+        <PanGestureHandler onActivated={handleActivatedFigure} onEnded={handleEndMove} enabled={player !== currentMove} onGestureEvent={panGestureHandler}>
+            <Animated.Image style={[styles.container, reanimatedStyle, { width: WIDTH_IMAGE, height: HEIGHT_IMAGE }]}
+                source={figureImage} />
         </PanGestureHandler>
     );
 };
