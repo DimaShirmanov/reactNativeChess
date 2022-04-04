@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     StyleSheet, TouchableOpacity,
     useWindowDimensions,
@@ -8,15 +8,13 @@ import Animated, {
     runOnJS,
     useAnimatedGestureHandler,
     useAnimatedStyle,
-    useSharedValue,
+    useSharedValue, withSpring,
     withTiming
 } from 'react-native-reanimated';
 import { useDispatch, useSelector } from 'react-redux';
 import FIGURE_IMAGES from '../../../constants/FIGURE_IMAGES';
 import actions from '../../../store/game/actions';
 import { getCurrentMove } from "../../../store/game/selectors";
-
-const SCALE = 0.8;
 
 const Figure = ({ position, player, type }) => {
     const currentMove = useSelector(getCurrentMove);
@@ -83,9 +81,9 @@ const Figure = ({ position, player, type }) => {
         dispatch(actions.toIdentifyPossibleMoves({ fromPosition: position, player, figureType: type }));
 
     return (
-        <PanGestureHandler onActivated={handleActivatedFigure} onEnded={handleEndMove} enabled={player !== currentMove} onGestureEvent={panGestureHandler}>
+        <PanGestureHandler onActivated={handleActivatedFigure} onEnded={handleEndMove} enabled={false} onGestureEvent={panGestureHandler}>
             <Animated.View style={styles.container}>
-                <TouchableOpacity activeOpacity={0.3} disabled={player === currentMove} onPress={handleActivatedFigure}>
+                <TouchableOpacity activeOpacity={0} disabled={player === currentMove} onPress={handleActivatedFigure}>
                     <Animated.Image style={[reanimatedStyle, { width: WIDTH_IMAGE, height: HEIGHT_IMAGE }]}
                                     source={figureImage} />
                 </TouchableOpacity>

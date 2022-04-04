@@ -10,7 +10,8 @@ const initialState = Immutable({
     currentMove: null,
     activeFields: [],
     figuresOnBoard: [],
-    activeFigure: null
+    activeFigure: null,
+    isOpenSwapModal: false
 });
 
 const generateFields = () => {
@@ -93,11 +94,14 @@ export default (state = initialState, action = {}) => {
                 x, y, player: action.player, figuresOnBoard: state.figuresOnBoard, type: action.figureType
             });
 
-            return state.merge({activeFields, activeFigure: {x, y, player: action.player}});
+            return state.merge({activeFields, activeFigure: {x, y, player: action.player, type: action.figureType}});
         }
         case types.MOVE_FIGURE: {
             const {toPosition} = action;
-            const {x, y, player} = state.activeFigure;
+            const {x, y, player, type} = state.activeFigure;
+            const isPawn = type === FIGURES.pawn;
+            const isLastPosition = toPosition.y === 1 || toPosition.y === 8;
+
             let isFriendlyPerson = false;
             const isFigureCanMove = Boolean(state.activeFields.find(item => item.x === toPosition.x && item.y === toPosition.y));
             const newFiguresOnBoard = state.figuresOnBoard.filter(item => {
@@ -112,12 +116,12 @@ export default (state = initialState, action = {}) => {
 
                 return true;
             }).map(item => {
-                if (!isFigureCanMove && item.x === x && item.y === y || (isFriendlyPerson && item.x === x && item.y === y)) {
+                if ((!isFigureCanMove && item.x === x && item.y === y) || (isFriendlyPerson && item.x === x && item.y === y)) {
                     return {...item, x, y};
                 }
 
                 if (!isFriendlyPerson && item.x === x && item.y === y) {
-                    return {...item, x: toPosition.x, y: toPosition.y};
+                    return {...item, x: toPosition.x, y: toPosition.y, walk: isPawn};
                 }
 
                 return item;
@@ -127,8 +131,30 @@ export default (state = initialState, action = {}) => {
                 figuresOnBoard: newFiguresOnBoard,
                 currentMove: (isFriendlyPerson || !isFigureCanMove) ? state.currentMove : (state.currentMove === USERS.PLAYER1 ? USERS.PLAYER2 : USERS.PLAYER1),
                 activeFields: [],
-                activeFigure: null
+                activeFigure: null,
+                isLastPosition: isFigureCanMove && isLastPosition && isPawn,
+                positionForSwap: toPosition
             });
+        }
+
+        case types.CLEAR_SELECTED: {
+            return state.merge({
+                activeFields: [],
+                activeFigure: null
+            })
+        }
+
+        case types.SWAP_FIGURE: {
+            const {x, y} = state.positionForSwap;
+            return state.merge(
+                {
+                    figuresOnBoard: state.figuresOnBoard.map(item => {
+                        return item.x === x && item.y === y ? {...item, type: action.figureType} : item;
+                    }),
+                    positionForSwap: null,
+                    isLastPosition: false
+                }
+            );
         }
         default:
             return state;

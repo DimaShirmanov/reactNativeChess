@@ -18,16 +18,20 @@ const Field = ({ field }) => {
     const isCurrentFieldActive = activeFigure?.x === field.x && activeFigure?.y === field.y;
 
     const handleFieldPress = () => {
-        dispatch(actions.moveFigure({
-            toPosition: {
-                x: field.x,
-                y: field.y
-            }
-        }))
+        if (!isActive) {
+            dispatch(actions.clearSelected())
+        } else {
+            dispatch(actions.moveFigure({
+                toPosition: {
+                    x: field.x,
+                    y: field.y
+                }
+            }));
+        }
     }
 
     return (
-        <TouchableOpacity disabled={!isActive} onPress={handleFieldPress} style={[
+        <TouchableOpacity activeOpacity={0.3}  onPress={handleFieldPress} style={[
             styles.container,
             { backgroundColor: field.color, width, height },
         ]}>
