@@ -14,7 +14,12 @@ import actions from "../../store/game/actions";
 
 const Board = () => {
     const dispatch = useDispatch();
-    const {isLoading, fields, figuresOnBoard, isLastPosition} = useSelector(state => state.game);
+    const {isLoading, fields, isLastPosition} = useSelector(state => state.game);
+    const figuresOnBoard = useSelector(state => {
+        const obj = state.game.figuresOnBoard;
+        return Object.keys(obj).map(key => obj[key]);
+        å
+    });
 
     useEffect(() => {
         dispatch(gameActions.initGame());
@@ -79,8 +84,10 @@ const Board = () => {
                                 justifyContent: 'space-between'
                             }}>
                                 {
-                                    IMAGES.map(item => <TouchableOpacity onPress={() => handleSwapFigurePress(item.type)}><Image style={{width: 100, height: 100}}
-                                                                               source={item.image}/></TouchableOpacity>)
+                                    IMAGES.map(item => <TouchableOpacity
+                                        onPress={() => handleSwapFigurePress(item.type)}><Image
+                                        style={{width: 100, height: 100}}
+                                        source={item.image}/></TouchableOpacity>)
                                 }
                             </View>
                         </View>
