@@ -14,10 +14,12 @@ import Animated, {
 import {useDispatch, useSelector} from 'react-redux';
 import FIGURE_IMAGES from '../../../constants/FIGURE_IMAGES';
 import actions from '../../../store/game/actions';
-import {getCurrentMove} from "../../../store/game/selectors";
+import {getCurrentMove, getMode} from "../../../store/game/selectors";
+import USERS from "../../../constants/USERS";
 
 const Figure = ({position, player, type}) => {
     const currentMove = useSelector(getCurrentMove);
+
     const width = useWindowDimensions().width;
     const height = useWindowDimensions().height;
     const WIDTH_FILED = width / 8;

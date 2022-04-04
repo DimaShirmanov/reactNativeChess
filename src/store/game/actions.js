@@ -21,7 +21,9 @@ const toIdentifyPossibleMoves = ({fromPosition, player, figureType}) => ({
 
 const clearSelected = () => ({type: types.CLEAR_SELECTED});
 
-const swapFigure = figureType => ({type: types.SWAP_FIGURE, figureType})
+const swapFigure = figureType => ({type: types.SWAP_FIGURE, figureType});
+
+const moveBot = () => ({type: types.MOVE_BOT})
 
 export default {
     initGame,
@@ -32,5 +34,6 @@ export default {
     moveFigure,
     toIdentifyPossibleMoves,
     clearSelected,
-    swapFigure
+    swapFigure,
+    moveBot
 }

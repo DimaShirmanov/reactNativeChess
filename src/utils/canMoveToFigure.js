@@ -349,5 +349,5 @@ export default ({
             break;
     }
 
-    return result
+    return result.filter(item => item.x >= 1 && item.x <= 8 && item.y >= 1 && item.y <= 8)
 }
