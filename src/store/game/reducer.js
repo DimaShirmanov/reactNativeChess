@@ -90,9 +90,11 @@ export default (state = initialState, action = {}) => {
             return state.merge({activeFields: []});
         case types.TO_IDENTIFY_POSSIBLE_MOVES: {
             const {x, y} = action.fromPosition;
+            const start = Date.now();
             const activeFields = canMoveToFigure({
                 x, y, player: action.player, figuresOnBoard: state.figuresOnBoard, type: action.figureType
             });
+            console.log(Date.now() - start);
 
             return state.merge({activeFields, activeFigure: {x, y, player: action.player, type: action.figureType}});
         }

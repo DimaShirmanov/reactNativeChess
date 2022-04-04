@@ -1,8 +1,6 @@
 import FIGURES from "../constants/FIGURES";
 import USERS from "../constants/USERS";
 
-const filterXY = item => item.x >= 0 && item.x <= 8 && item.y <= 8 && item.y >= 0;
-
 const getPositionForPawn = ({x, y, player, figuresOnBoard}) => {
     const result = [];
     const findPawn = figuresOnBoard.find(item => item.x === x && item.y === y);
@@ -133,7 +131,7 @@ const getPositionForHorse = ({x, y, player, figuresOnBoard}) => {
     return results;
 }
 
-const getPositionForKing = ({x, y, player, figuresOnBoard}) => {
+const getPositionForKing = ({x, y}) => {
     const results = [];
 
     for (let i = x - 1; i <= x + 1; i++) {
@@ -142,15 +140,7 @@ const getPositionForKing = ({x, y, player, figuresOnBoard}) => {
         }
     }
 
-    return results.filter(el => {
-        const findElementByPosition = figuresOnBoard.find(item => item.x == el.x && item.y === el.y);
-        if (findElementByPosition && findElementByPosition.player === player) {
-            return false;
-        }
-
-        return true;
-    });
-    ;
+    return results;
 }
 
 const getPositionForOfficer = ({x, y, player, figuresOnBoard}) => {
@@ -333,23 +323,35 @@ export default ({
                     player,
                     figuresOnBoard
                 }) => {
+    let result;
     switch (type) {
         case FIGURES.pawn: {
-            return getPositionForPawn({x, y, player, figuresOnBoard}).filter(filterXY);
+            result = getPositionForPawn({x, y, player, figuresOnBoard});
+            break;
         }
-
-        case FIGURES.rook:
-            return getPositionForRook({x, y, player, figuresOnBoard}).filter(filterXY);
-
-        case FIGURES.horse:
-            return getPositionForHorse({x, y, player, figuresOnBoard}).filter(filterXY);
-        case FIGURES.officer:
-            return getPositionForOfficer({x, y, player, figuresOnBoard}).filter(filterXY);
-        case FIGURES.king:
-            return getPositionForKing({x, y, player, figuresOnBoard}).filter(filterXY);
+        case FIGURES.rook: {
+            result = getPositionForRook({x, y, player, figuresOnBoard});
+            break;
+        }
+        case FIGURES.horse: {
+            result = getPositionForHorse({x, y, player, figuresOnBoard});
+            break;
+        }
+        case FIGURES.officer: {
+            result = getPositionForOfficer({x, y, player, figuresOnBoard});
+            break;
+        }
+        case FIGURES.king: {
+            result = getPositionForKing({x, y, player, figuresOnBoard});
+            break;
+        }
         case FIGURES.queen:
-            return getPositionForQueen({x, y, player, figuresOnBoard}).filter(filterXY);
+            result = getPositionForQueen({x, y, player, figuresOnBoard});
+            break;
         default:
-            return [];
+            result = [];
+            break;
     }
+
+    return result
 }

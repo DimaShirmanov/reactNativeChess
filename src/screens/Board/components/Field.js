@@ -31,11 +31,11 @@ const Field = ({ field }) => {
     }
 
     return (
-        <TouchableOpacity activeOpacity={0.3}  onPress={handleFieldPress} style={[
+        <TouchableOpacity activeOpacity={1}  onPress={handleFieldPress} style={[
             styles.container,
             { backgroundColor: field.color, width, height },
         ]}>
-            {isActive && <View style={{width: 10, height: 10, backgroundColor: 'green', borderRadius: 10}}/>}
+            {isActive && <View style={{width: width / 2, height: width / 2, backgroundColor: 'green', borderRadius: 10, zIndex: 1}}/>}
         </TouchableOpacity>
     );
 }
@@ -46,6 +46,6 @@ const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: -1
+        zIndex: 1
     }
 })
