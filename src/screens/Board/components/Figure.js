@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
-    StyleSheet,
-    useWindowDimensions
+    StyleSheet, TouchableOpacity,
+    useWindowDimensions,
 } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
@@ -45,10 +45,10 @@ const Figure = ({ position, player, type }) => {
         },
         onActive: (event, context) => {
             const { absoluteY, absoluteX } = event;
-            translateX.value = (event.translationX / SCALE) + context.translateX;
-            translateY.value = (event.translationY / SCALE) + context.translateY;
-            context.absoluteX = absoluteX / SCALE;
-            context.absoluteY = absoluteY / SCALE;
+            translateX.value = event.translationX + context.translateX;
+            translateY.value = event.translationY + context.translateY;
+            context.absoluteX = absoluteX;
+            context.absoluteY = absoluteY;
         },
         onEnd: ({ absoluteX, absoluteY }) => {
             const x = Math.ceil(absoluteX / WIDTH_FILED);
@@ -76,7 +76,7 @@ const Figure = ({ position, player, type }) => {
     const handleEndMove = () => {
         translateX.value = withTiming(getAbsolutePositionX(position.x), { duration: 500 });
         translateY.value = withTiming(getAbsolutePositionY(position.y), { duration: 500 });
-        dispatch(actions.moveFigure({ fromPosition: position, toPosition, player }));
+        dispatch(actions.moveFigure({ toPosition }));
     }
 
     const handleActivatedFigure = () =>
@@ -84,8 +84,12 @@ const Figure = ({ position, player, type }) => {
 
     return (
         <PanGestureHandler onActivated={handleActivatedFigure} onEnded={handleEndMove} enabled={player !== currentMove} onGestureEvent={panGestureHandler}>
-            <Animated.Image style={[styles.container, reanimatedStyle, { width: WIDTH_IMAGE, height: HEIGHT_IMAGE }]}
-                source={figureImage} />
+            <Animated.View style={styles.container}>
+                <TouchableOpacity activeOpacity={0.3} disabled={player === currentMove} onPress={handleActivatedFigure}>
+                    <Animated.Image style={[reanimatedStyle, { width: WIDTH_IMAGE, height: HEIGHT_IMAGE }]}
+                                    source={figureImage} />
+                </TouchableOpacity>
+            </Animated.View>
         </PanGestureHandler>
     );
 };

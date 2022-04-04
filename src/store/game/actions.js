@@ -7,11 +7,9 @@ const canMoveFields = activeFields => ({type: types.CAN_MOVE_FIELDS, activeField
 const clearMove = () => ({type: types.CLEAR_MOVE_FIELDS});
 
 
-const moveFigure = ({fromPosition, toPosition, player}) => ({
+const moveFigure = ({toPosition}) => ({
     type: types.MOVE_FIGURE,
-    fromPosition,
     toPosition,
-    player
 });
 
 const toIdentifyPossibleMoves = ({fromPosition, player, figureType}) => ({
@@ -28,5 +26,5 @@ export default {
     canMoveFields,
     clearMove,
     moveFigure,
-    toIdentifyPossibleMoves
+    toIdentifyPossibleMoves,
 }
